@@ -1,0 +1,19 @@
+slide "Introduction"
+    background: #202020
+    text: "Welcome to my talk"
+    text: "This was built with C"
+
+slide "Image Example"
+    background: #ffffff
+    text: "Here’s a picture"
+    image: ./images/cat.png
+
+slide "Code Example"
+    background: #000000
+    text: "Sample C code"
+    code: |
+        #include <stdio.h>
+        int main() {
+            printf("Hello, world!\n");
+            return 0;
+        }
