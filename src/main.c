@@ -229,6 +229,7 @@ char *read_file(char *file_path) {
 }
 
 int main(int argc, char **argv) {
+    printf("Hello, World");
     if (argc != 2) {
         fprintf(stderr, "ERROR: incorrect usage\n");
         fprintf(stderr, "Correct usage: ./%s <filename>\n", argv[0]);
