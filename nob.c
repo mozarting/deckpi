@@ -17,6 +17,7 @@ int main(int argc, char **argv) {
     nob_cmd_append(&cmd, BUILD_FOLDER"deckpi");         // output
     nob_cmd_append(&cmd, SRC_FOLDER"main.c");         // input source
     if (!nob_cmd_run_sync(cmd)) return 1;   // run command
+    nob_cmd_append(&cmd, SRC_FOLDER "file.c");   // input source
 
     return 0;
 }
