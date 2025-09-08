@@ -18,30 +18,29 @@ void init_lexer(Lexer *lexer, const char *source) {
     lexer->line = 1;
 }
 
-const char *token_name(TokenType t) {
-    switch (t) {
-    case TOKEN_SLIDE:
-        return "SLIDE";
-    case TOKEN_TITLE:
-        return "TITLE";
-    case TOKEN_SUBTITLE:
-        return "SUBTITLE";
-    case TOKEN_STRING:
-        return "STRING";
-    case TOKEN_NUMBER:
-        return "NUMBER";
-    case TOKEN_COLON:
-        return "COLON";
-    case TOKEN_BULLET:
-        return "BULLET";
-    case TOKEN_NEWLINE:
-        return "NEWLINE";
-    case TOKEN_EOF:
-        return "EOF";
-    case TOKEN_UNKNOWN:
-        return "UNKNOWN";
-    default:
-        return "???";
+char advance(Lexer *lexer) { return lexer->source[lexer->position++]; }
+
+char peek(Lexer *lexer) { return lexer->source[lexer->position]; }
+
+int is_at_end(Lexer *lexer) { return lexer->source[lexer->position] == '\0'; }
+
+Token make_token(Lexer *lexer, TokenType type, const char *start,
+                 const char *end) {
+    Token token;
+    size_t len = end - start;
+    char *lexeme = malloc(len + 1);
+    strncpy(lexeme, start, len);
+    lexeme[len] = '\0';
+
+    token.type = type;
+    token.lexeme = lexeme;
+    token.line = lexer->line;
+    return token;
+}
+
+void free_token(Token token) {
+    if (token.lexeme) {
+        free(token.lexeme);
     }
 }
 
@@ -56,133 +55,64 @@ TokenType lookup_keyword(const char *start, const char *end) {
     return TOKEN_IDENTIFIER;
 }
 
-void add_token_with_lexeme(Lexer *lexer, TokenType type, const char *start,
-                           const char *end) {
-    if (token_count >= MAX_TOKENS) {
-        fprintf(stderr, "ERROR: Too many tokens!\n");
-        exit(1);
-    }
-
-    size_t len = end - start;
-    char *lexeme = malloc(len + 1);
-    if (!lexeme) {
-        fprintf(stderr, "ERROR: Memory allocation failed\n");
-        exit(1);
-    }
-
-    strncpy(lexeme, start, len);
-    lexeme[len] = '\0';
-
-    tokens[token_count].type = type;
-    tokens[token_count].lexeme = lexeme;
-    tokens[token_count].line = lexer->line;
-    token_count++;
-}
-
-void add_token(Lexer *lexer, TokenType type) {
-    add_token_with_lexeme(lexer, type, "", "");
-}
-
-void read_number(Lexer *lexer) {
-    const char *start = lexer->source + lexer->position;
-    while (isdigit(peek(lexer))) {
-        advance(lexer);
-    }
-    const char *end = lexer->source + lexer->position;
-    add_token_with_lexeme(lexer, TOKEN_NUMBER, start, end);
-}
-
-void read_string(Lexer *lexer) {
-    advance(lexer);
-    const char *start = lexer->source + lexer->position;
-    while (peek(lexer) != '"' && peek(lexer) != '\0') {
-        if (peek(lexer) == '\n') {
-            fprintf(stderr, "Unterminated string literal at line %d!\n",
-                    lexer->line);
-            advance(lexer);
-            lexer->line++;
-            break;
-        }
-        advance(lexer);
-    }
-    const char *end = lexer->source + lexer->position;
-    add_token_with_lexeme(lexer, TOKEN_STRING, start, end);
-    if (peek(lexer) == '"') {
-        advance(lexer);
-    }
-}
-
-void print_tokens() {
-    for (int i = 0; i < token_count; i++) {
-        printf("%d: %s \"%s\"\n", i, token_name(tokens[i].type),
-               tokens[i].lexeme ? tokens[i].lexeme : "");
-    }
-}
-
-char advance(Lexer *lexer) { return lexer->source[lexer->position++]; }
-
-char peek(Lexer *lexer) { return lexer->source[lexer->position]; }
-
-void next_token(Lexer *lexer) {
-    while (peek(lexer) != '\0') {
-        switch (peek(lexer)) {
+Token get_next_token(Lexer *lexer) {
+    while (!is_at_end(lexer)) {
+        char c = advance(lexer);
+        switch (c) {
         case ':':
-            add_token(lexer, TOKEN_COLON);
-            advance(lexer);
-            break;
+            return make_token(lexer, TOKEN_COLON,
+                              lexer->source + lexer->position - 1,
+                              lexer->source + lexer->position);
         case '-':
-            add_token(lexer, TOKEN_BULLET);
-            advance(lexer);
-            break;
+            return make_token(lexer, TOKEN_BULLET,
+                              lexer->source + lexer->position - 1,
+                              lexer->source + lexer->position);
         case '"': {
-            read_string(lexer);
-            break;
+            const char *start = lexer->source + lexer->position;
+            while (peek(lexer) != '"' && !is_at_end(lexer)) {
+                if (peek(lexer) == '\n')
+                    lexer->line++;
+                advance(lexer);
+            }
+            if (is_at_end(lexer)) {
+                fprintf(stderr, "Unterminated string at line %d\n",
+                        lexer->line);
+                return make_token(lexer, TOKEN_UNKNOWN, start,
+                                  lexer->source + lexer->position);
+            }
+            const char *end = lexer->source + lexer->position;
+            advance(lexer); // consume closing quote
+            return make_token(lexer, TOKEN_STRING, start, end);
         }
-        case ' ':
-        case '\r':
-        case '\t':
-            advance(lexer);
-            break;
         case '\n':
-            add_token(lexer, TOKEN_NEWLINE);
-            advance(lexer);
             lexer->line++;
-            break;
+            return make_token(lexer, TOKEN_NEWLINE,
+                              lexer->source + lexer->position - 1,
+                              lexer->source + lexer->position);
+        case ' ':
+        case '\t':
+        case '\r':
+            continue; // skip whitespace
         default:
-            if (isdigit(peek(lexer))) {
-                read_number(lexer);
-                break;
-            } else if (isalpha(peek(lexer))) {
-                const char *start = lexer->source + lexer->position;
-                while (isalpha(peek(lexer)))
+            if (isdigit(c)) {
+                const char *start = lexer->source + lexer->position - 1;
+                while (isdigit(peek(lexer)))
+                    advance(lexer);
+                return make_token(lexer, TOKEN_NUMBER, start,
+                                  lexer->source + lexer->position);
+            } else if (isalpha(c)) {
+                const char *start = lexer->source + lexer->position - 1;
+                while (isalnum(peek(lexer)) || peek(lexer) == '_')
                     advance(lexer);
                 const char *end = lexer->source + lexer->position;
                 TokenType t = lookup_keyword(start, end);
-                add_token_with_lexeme(lexer, t, start, end);
-                break;
+                return make_token(lexer, t, start, end);
             } else {
-                add_token(lexer, TOKEN_UNKNOWN);
-                advance(lexer);
-                break;
+                return make_token(lexer, TOKEN_UNKNOWN,
+                                  lexer->source + lexer->position - 1,
+                                  lexer->source + lexer->position);
             }
-            break;
         }
     }
-    add_token(lexer, TOKEN_EOF);
-}
-
-int lexer(char *file_content) {
-    Lexer lexer;
-    init_lexer(&lexer, file_content);
-    next_token(&lexer);
-    print_tokens();
-    return 0;
-}
-
-void free_tokens(void) {
-    for (int i = 0; i < token_count; i++) {
-        free(tokens[i].lexeme);
-        tokens[i].lexeme = NULL;
-    }
-    token_count = 0;
+    return make_token(lexer, TOKEN_EOF, "", "");
 }
