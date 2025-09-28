@@ -1,19 +1,15 @@
-slide "Introduction"
-    background: #202020
-    text: "Welcome to my talk"
-    text: "This was built with C"
+slide 1 :
+title : "Deckpi"
+subtitle: "A minimalist slide deck creator and presenter written in C."
 
-slide "Image Example"
-    background: #ffffff
-    text: "Here’s a picture"
-    image: ./images/cat.png
-
-slide "Code Example"
-    background: #000000
-    text: "Sample C code"
-    code: |
-        #include <stdio.h>
-        int main() {
-            printf("Hello, world!\n");
-            return 0;
-        }
+slide 2 :
+title: "features"
+- "Text-based format for writing slides"
+- "Live fullscreen presentation with arrow key navigation"
+- "Backgrounds (colors, images)"
+- "Text rendering with custom fonts"
+- "Image embedding"
+   
+slide 3 :
+title: "Example DSL"
+subtitle: "Minimal slides DSL"

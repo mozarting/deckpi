@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-Token tokens[MAX_TOKENS];
-int token_count = 0;
-
 Keyword keywords[] = {{"slide", TOKEN_SLIDE},
                       {"title", TOKEN_TITLE},
                       {"subtitle", TOKEN_SUBTITLE},
@@ -86,9 +83,10 @@ Token get_next_token(Lexer *lexer) {
         }
         case '\n':
             lexer->line++;
-            return make_token(lexer, TOKEN_NEWLINE,
-                              lexer->source + lexer->position - 1,
-                              lexer->source + lexer->position);
+            continue;
+            // return make_token(lexer, TOKEN_NEWLINE,
+            //                   lexer->source + lexer->position - 1,
+            //                   lexer->source + lexer->position);
         case ' ':
         case '\t':
         case '\r':

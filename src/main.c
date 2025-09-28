@@ -1,35 +1,9 @@
 #include "../include/file.h"
 #include "../include/lexer.h"
+#include "../include/parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-const char *token_name(TokenType t) {
-    switch (t) {
-    case TOKEN_SLIDE:
-        return "SLIDE";
-    case TOKEN_TITLE:
-        return "TITLE";
-    case TOKEN_SUBTITLE:
-        return "SUBTITLE";
-    case TOKEN_STRING:
-        return "STRING";
-    case TOKEN_NUMBER:
-        return "NUMBER";
-    case TOKEN_COLON:
-        return "COLON";
-    case TOKEN_BULLET:
-        return "BULLET";
-    case TOKEN_NEWLINE:
-        return "NEWLINE";
-    case TOKEN_EOF:
-        return "EOF";
-    case TOKEN_UNKNOWN:
-        return "UNKNOWN";
-    default:
-        return "???";
-    }
-}
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -43,19 +17,42 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    // lexer(file_contents);
-
     Lexer lexer;
     init_lexer(&lexer, file_contents);
+
+    init_parser();
 
     Token token;
     do {
         token = get_next_token(&lexer);
-        printf("%s \"%s\"\n", token_name(token.type),
-               token.lexeme ? token.lexeme : "");
-        free_token(token);
+        if (token_count < MAX_TOKENS) {
+            tokens[token_count++] = token;
+        } else {
+            fprintf(stderr, "Error: Too many tokens\n");
+            free_token(token);
+            break;
+        }
     } while (token.type != TOKEN_EOF);
 
+    parse_tokens();
+
+    for (int i = 0; i < presentation.slide_count; i++) {
+        Slide *slide = &presentation.slides[i];
+        printf("Slide %d:\n", slide->number);
+        printf("  Title: %s\n", slide->title);
+        if (slide->subtitle) {
+            printf("  Subtitle: %s\n", slide->subtitle);
+        }
+        for (int j = 0; j < slide->bullet_count; j++) {
+            printf("  - %s\n", slide->bullets[j].text);
+        }
+        printf("\n");
+    }
+
+    for (int i = 0; i < token_count; i++) {
+        free_token(tokens[i]);
+    }
+    free_presentation();
     free(file_contents);
 
     return EXIT_SUCCESS;
