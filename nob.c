@@ -18,7 +18,11 @@ int main(int argc, char **argv) {
     nob_cmd_append(&cmd, BUILD_FOLDER "deckpi"); // output
     nob_cmd_append(&cmd, SRC_FOLDER "main.c");   // input source
     nob_cmd_append(&cmd, SRC_FOLDER "lexer.c");  // input source
+    nob_cmd_append(&cmd, SRC_FOLDER "parser.c"); // input source
     nob_cmd_append(&cmd, SRC_FOLDER "file.c");   // input source
+    nob_cmd_append(&cmd, "-lSDL2");
+    nob_cmd_append(&cmd, "-lSDL2_ttf");
+
     if (!nob_cmd_run_sync(cmd))
         return 1; // run command
 

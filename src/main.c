@@ -1,9 +1,9 @@
 #include "../include/file.h"
 #include "../include/lexer.h"
 #include "../include/parser.h"
+#include "generator.c"
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -35,19 +35,7 @@ int main(int argc, char **argv) {
     } while (token.type != TOKEN_EOF);
 
     parse_tokens();
-
-    for (int i = 0; i < presentation.slide_count; i++) {
-        Slide *slide = &presentation.slides[i];
-        printf("Slide %d:\n", slide->number);
-        printf("  Title: %s\n", slide->title);
-        if (slide->subtitle) {
-            printf("  Subtitle: %s\n", slide->subtitle);
-        }
-        for (int j = 0; j < slide->bullet_count; j++) {
-            printf("  - %s\n", slide->bullets[j].text);
-        }
-        printf("\n");
-    }
+    run_slides(&presentation);
 
     for (int i = 0; i < token_count; i++) {
         free_token(tokens[i]);

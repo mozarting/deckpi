@@ -3,7 +3,7 @@ title : "Deckpi"
 subtitle: "A minimalist slide deck creator and presenter written in C."
 
 slide 2 :
-title: "features"
+title: "Features"
 - "Text-based format for writing slides"
 - "Live fullscreen presentation with arrow key navigation"
 - "Backgrounds (colors, images)"
