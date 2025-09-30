@@ -11,15 +11,17 @@ Write slides in a simple text format, then present them directly in fullscreen.
 ## Example Deck
 
 ```txt
-slide "Introduction"
-    background: #202020
-    text: "Welcome to my talk"
-    text: "Built with C"
+slide 1 :
+title : "Deckpi"
+subtitle: "A minimalist slide deck creator and presenter written in C."
 
-slide "Image Example"
-    background: #ffffff
-    text: "Here’s a picture"
-    image: ./images/cat.png
+slide 2 :
+title: "Features"
+- "Text-based format for writing slides"
+- "Live fullscreen presentation with arrow key navigation"
+- "Backgrounds (colors, images)"
+- "Text rendering with custom fonts"
+- "Image embedding"
 ```
 
 ## Features (planned)
@@ -33,8 +35,8 @@ slide "Image Example"
 
 ## Roadmap
 
-- [ ] Basic parser (`deckpi.c` reads `.txt` → slide structs)
-- [ ] Minimal presenter (render text, arrow keys to switch)
+- [x] Basic parser (`deckpi.c` reads `.txt` → slide structs)
+- [x] Minimal presenter (render text, arrow keys to switch)
 - [ ] Background colors + image support
 - [ ] Export to PNG/PDF
 - [ ] Code blocks with syntax highlighting
@@ -46,10 +48,10 @@ Dependencies:
 
 - SDL2
 - SDL2_ttf
-- SDL2_image
 
 ```bash
-gcc -o deckpi deckpi.c -lSDL2 -lSDL2_ttf -lSDL2_image
+cc -o nob nob.c
+./nob
 ```
 
 ## Usage
