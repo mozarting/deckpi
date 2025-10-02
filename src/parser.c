@@ -26,6 +26,8 @@ const char *token_name(TokenType t) {
         return "BULLET";
     case TOKEN_NEWLINE:
         return "NEWLINE";
+    case TOKEN_IMAGE:
+        return "IMAGE";
     case TOKEN_EOF:
         return "EOF";
     case TOKEN_UNKNOWN:
@@ -113,6 +115,36 @@ void parse_slide() {
         Token subtitle_token =
             expect_token(TOKEN_STRING, "Expected string for subtitle");
         slide.subtitle = strdup(subtitle_token.lexeme);
+    }
+
+    while (peek_token().type != TOKEN_SLIDE && peek_token().type != TOKEN_EOF) {
+        Token t = peek_token();
+
+        switch (t.type) {
+        case TOKEN_IMAGE:
+            consume_token();
+            expect_token(TOKEN_COLON, "Expected ':' after image keyword");
+            Token image_token =
+                expect_token(TOKEN_STRING, "Expected string for image");
+            slide.image = strdup(image_token.lexeme);
+            break;
+
+        case TOKEN_BULLET:
+            parse_bullet(&slide);
+            break;
+
+        default:
+            fprintf(stderr, "Unexpected token '%s' in slide\n", t.lexeme);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    if (peek_token().type == TOKEN_IMAGE) {
+        consume_token();
+        expect_token(TOKEN_COLON, "Expected ':' after image keyword");
+        Token image_token =
+            expect_token(TOKEN_STRING, "Expected string for subtitle");
+        slide.image = strdup(image_token.lexeme);
     }
 
     while (peek_token().type == TOKEN_BULLET) {

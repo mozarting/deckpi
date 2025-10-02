@@ -1,5 +1,6 @@
 #include "../include/parser.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
@@ -29,30 +30,76 @@ void draw_text(const char *text, TTF_Font *font, int x, int y,
     SDL_DestroyTexture(texture);
 }
 
+int draw_centered_text(const char *text, TTF_Font *font, int y,
+                       SDL_Color color) {
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text, color);
+    if (!surface)
+        return 0;
+
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect dst = {WINDOW_WIDTH / 2, y, surface->w, surface->h};
+    SDL_FreeSurface(surface);
+
+    SDL_RenderCopy(renderer, texture, NULL, &dst);
+    SDL_DestroyTexture(texture);
+
+    return dst.h;
+}
+
 void render_slide(Slide *slide) {
-    SDL_SetRenderDrawColor(renderer, 00, 00, 00, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     SDL_Color white = {255, 255, 255, 255};
 
+    int y = WINDOW_HEIGHT / 2; // starting top margin
+
     // Title
-    draw_text(slide->title, title_font, WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2,
-              white);
+    if (slide->title) {
+        y += draw_centered_text(slide->title, title_font, y, white) + 20;
+    }
 
     // Subtitle
     if (slide->subtitle) {
-        draw_text(slide->subtitle, subtitle_font, WINDOW_WIDTH / 2,
-                  (WINDOW_HEIGHT / 2) + 80, white);
+        y += draw_centered_text(slide->subtitle, subtitle_font, y, white) + 20;
+    }
+
+    // Image
+    if (slide->image) {
+        SDL_Surface *image_sur = IMG_Load(slide->image);
+        if (!image_sur) {
+            fprintf(stderr, "Error loading image: %s\n", IMG_GetError());
+        } else {
+            SDL_Texture *image_tex =
+                SDL_CreateTextureFromSurface(renderer, image_sur);
+            int iw = image_sur->w;
+            int ih = image_sur->h;
+            SDL_FreeSurface(image_sur);
+
+            int max_w = 600, max_h = 400;
+            float aspect = (float)iw / (float)ih;
+            if (iw > max_w) {
+                iw = max_w;
+                ih = (int)(max_w / aspect);
+            }
+            if (ih > max_h) {
+                ih = max_h;
+                iw = (int)(max_h * aspect);
+            }
+
+            SDL_Rect dest = {WINDOW_WIDTH / 2, y, iw, ih};
+            SDL_RenderCopy(renderer, image_tex, NULL, &dest);
+            SDL_DestroyTexture(image_tex);
+
+            y += ih + 20;
+        }
     }
 
     // Bullets
-    int y =
-        slide->subtitle ? (WINDOW_HEIGHT / 2) + 160 : (WINDOW_HEIGHT / 2) + 100;
     for (int i = 0; i < slide->bullet_count; i++) {
         char buffer[1024];
         snprintf(buffer, sizeof(buffer), "• %s", slide->bullets[i].text);
-        draw_text(buffer, bullet_font, WINDOW_WIDTH / 2, y, white);
-        y += 40;
+        y += draw_centered_text(buffer, bullet_font, y, white) + 10;
     }
 
     SDL_RenderPresent(renderer);
@@ -66,6 +113,10 @@ int run_slides(Presentation *presentation) {
     if (TTF_Init() != 0) {
         fprintf(stderr, "TTF_Init Error: %s\n", TTF_GetError());
         SDL_Quit();
+        return 1;
+    }
+    if (IMG_Init(IMG_INIT_PNG) == 0) {
+        fprintf(stderr, "SDL2_image Error: %s\n", SDL_GetError());
         return 1;
     }
 

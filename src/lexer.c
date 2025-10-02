@@ -7,6 +7,7 @@
 Keyword keywords[] = {{"slide", TOKEN_SLIDE},
                       {"title", TOKEN_TITLE},
                       {"subtitle", TOKEN_SUBTITLE},
+                      {"image", TOKEN_IMAGE},
                       {NULL, TOKEN_UNKNOWN}};
 
 void init_lexer(Lexer *lexer, const char *source) {

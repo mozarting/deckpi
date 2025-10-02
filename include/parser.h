@@ -14,6 +14,7 @@ typedef struct {
     int number;
     char *title;
     char *subtitle; // NULL if no subtitle
+    char *image;    // NULL if no subtitle
     Bullet *bullets;
     int bullet_count;
 } Slide;

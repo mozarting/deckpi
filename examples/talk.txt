@@ -13,3 +13,8 @@ title: "Features"
 slide 3 :
 title: "Example DSL"
 subtitle: "Minimal slides DSL"
+ 
+slide 4 :
+title: "Image Support"
+subtitle: "Deckpi supports image embedding"
+image: "examples/image.png"

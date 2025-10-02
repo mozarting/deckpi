@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
     nob_cmd_append(&cmd, SRC_FOLDER "file.c");   // input source
     nob_cmd_append(&cmd, "-lSDL2");
     nob_cmd_append(&cmd, "-lSDL2_ttf");
+    nob_cmd_append(&cmd, "-lSDL2_image");
 
     if (!nob_cmd_run_sync(cmd))
         return 1; // run command
