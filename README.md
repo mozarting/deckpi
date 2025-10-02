@@ -8,7 +8,7 @@ Write slides in a simple text format, then present them directly in fullscreen.
 
 ## Personal Note:
 
-I started building this purely for recreational purposes, without researching the existing tools that I was sure existed. I didn’t think much about the syntax of the DSL and invented it on the fly. Now, looking back, I think the syntax is pathetic. It should have just been Markdown.
+I built Deckpi purely for fun, without researching existing slide tools. The DSL syntax was improvised as I went along, and looking back, it’s a bit clunky. Using Markdown from the start would likely have been simpler and more flexible.
 
 ## Example Deck
 
