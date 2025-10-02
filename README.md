@@ -42,10 +42,10 @@ image: "image.png"
 
 - [x] Basic parser (`deckpi.c` reads `.txt` → slide structs)
 - [x] Minimal presenter (render text, arrow keys to switch)
-- [ ] Background colors + image support
-      ~~- [ ] Export to PNG/PDF~~
-      ~~- [ ] Code blocks with syntax highlighting~~  
-       ~~- [ ] Transitions and animations~~
+- ~~[ ] Background colors + image support~~
+- ~~[ ] Code blocks with syntax highlighting~~
+- ~~[ ] Export to PNG/PDF~~
+- ~~[ ] Transitions and animations~~
 
 ## Build
 
